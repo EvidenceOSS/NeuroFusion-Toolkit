@@ -1,77 +1,53 @@
-# NeuroFusion-Toolkit -- Multimodal Fusion for Neurological Clinical AI
+# evidenceos-neurofusion
 
-![Status: Incubating](https://img.shields.io/badge/Status-Incubating-yellow?style=flat-square)
-![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square)
-![Part of: Evidence Commons](https://img.shields.io/badge/Part_of-Evidence_Commons-1E3A8A?style=flat-square)
+> NeuroFusion — multimodal neuroimaging + biomarker fusion platform for TBI outcome prediction. Public methodology, model cards, and integration reference for research partners.
 
-> *"TBI outcome prediction hits a biological ceiling around AUROC 0.85-0.88 -- reaching it requires principled fusion of tabular, imaging, and biomarker data, not larger models."*
+## Status
 
-| Attribute | Value |
-|-----------|-------|
-| Status | Incubating |
-| Maturity | Design Phase |
-| License | Apache-2.0 |
-| Part of | [Evidence Commons](https://github.com/EvidenceOSS) |
-| Mission Pillar | Pillar 5 (Multimodal Fusion) |
+Active research development. NeuroFusion Phase 1 targets CENTER-TBI and TBICare dataset integration.
 
-## Overview
+## What's here
 
-Single-modality models for neurological outcome prediction plateau well below the biological ceiling. Clinical practice produces heterogeneous data -- demographics and GCS scores (tabular), CT and MRI features (imaging), serum biomarkers such as GFAP, UCH-L1, S100B, and NSE (laboratory) -- that arrive at different times, with different missingness patterns, in different formats. NeuroFusion-Toolkit is designed to provide modular fusion architectures that combine these modalities with explicit handling for missing data and temporal misalignment, constrained by clinical ontologies (NINDS CDE v3.0).
+- `methodology/` — Multimodal fusion architecture (CT + MRI + biomarkers + EHR + time-series)
+- `model-cards/` — Model cards for each published NeuroFusion model (TRIPOD+AI compliant)
+- `reproducibility/` — Reproducibility scripts and synthetic data examples
+- `configs/` — Example multiverse analysis configs (BC-000 to BC-127 biomarker combinations)
 
-Research code for multimodal fusion exists in the parent codebase (`evidenceos-research/evidenceos-multimodal`). This repository is intended to contain extracted, standalone fusion utilities suitable for use outside the EvidenceOS research pipeline. No code has been extracted to this repo yet. Zero production LoRA or quantization code exists in the parent codebase.
+## What NeuroFusion does
 
-## Architecture
+NeuroFusion integrates six clinical data modalities for TBI outcome prediction:
 
-| Component | Description | Parent Code Exists |
-|-----------|-------------|-------------------|
-| `fusion/` | Cross-attention and late fusion architectures | Yes (research-stage) |
-| `ordinal/` | CORAL ordinal regression for GOS-E outcome scales | Yes (research-stage) |
-| `ontology/` | NINDS CDE-guided ontology constraints for fusion | Partial |
-| `missing/` | Missing modality handling and imputation strategies | Planned |
-| `vlm/` | Vision-language model integration (MedGemma evaluation path) | Not yet |
+1. **Structural neuroimaging** (CT, MRI) — processed via MONAI; Marshall + Rotterdam scale extraction
+2. **Blood biomarkers** (GFAP, UCH-L1, S100B, NSE, NfL, tau, IL-6) — 128 combinatorial combos (BC-000 to BC-127)
+3. **Clinical trajectory** (GCS serial, pupillary response, vital signs) — 6-hour interval time-series
+4. **Structured EHR** (demographics, mechanism, comorbidities)
+5. **ICP monitoring** (TIL score, daily ICP burden — T2/T3 facilities only)
+6. **Functional outcome** (GOSE at 3, 6, 12 months)
 
-## Current State
+The multiverse analysis engine (`evidenceos-research/evidenceos-multiverse`) runs ~25,000 valid analytical cells across 8 axes to characterize how model performance varies with analytical choices — generating Coverage Vibration of Effects (CVoE) as a novel model stability metric.
 
-**What exists in the parent codebase:**
-- Multimodal fusion module in `evidenceos-research/evidenceos-multimodal`
-- Cross-attention fusion architecture for combining tabular and imaging features
-- CORAL ordinal regression implementation for GOS-E prediction
-- Ontology-constrained fusion guided by NINDS CDE definitions
-- Prior evaluation score: 7/10 (functional but not production-grade)
-- MedGemma 1.5 4B identified as base VLM evaluation path
+## Novel contributions
 
-**What does not exist yet:**
-- Production LoRA fine-tuning or model quantization code (zero exists)
-- Standalone extraction of fusion utilities from the research pipeline
-- Missing modality handling as a reusable module
-- Temporal alignment utilities for asynchronous clinical data streams
-- Benchmarks comparing fusion strategies on TBI outcome prediction
-
-## Extraction Plan
-
-1. Extract core fusion architectures (cross-attention, late fusion) as standalone PyTorch modules
-2. Package CORAL ordinal regression as a reusable component for ordered outcome scales (GOS-E, mRS)
-3. Define ontology constraint interface compatible with NINDS CDE v3.0 YAML definitions
-4. Implement missing modality handling with documented assumptions and failure modes
-5. Provide example notebooks demonstrating fusion on synthetic neurological data (no real patient data)
-
-## Ecosystem Context
-
-```mermaid
-graph LR
-    A[Tabular<br/>demographics, GCS] --> B[NeuroFusion-Toolkit]
-    C[Imaging<br/>CT, MRI features] --> B
-    D[Biomarkers<br/>GFAP, UCH-L1] --> B
-    B --> E[BRIDGE-TBI<br/>outcome prediction]
-    style B fill:#2A9D8F,stroke:#1E3A8A,color:#fff
-```
-
-NeuroFusion-Toolkit is designed to provide the multimodal prediction layer for BRIDGE-TBI (combining tabular and imaging inputs for outcome prediction) and multi-source analysis capabilities for Lab-in-a-Box. Canonical source: [`evidenceos-research/evidenceos-multimodal`](https://github.com/EvidenceOS/evidenceos-research).
+- **CVoE (Coverage Vibration of Effects):** first metric to quantify conformal coverage instability across analytical multiverse
+- **SAFE Set:** Rashomon(ε) ∩ Coverage-Valid(δ) — the clinically deployable intersection of near-optimal and coverage-guaranteed models
+- **Assay harmonization axis:** explicit correction for Simoa vs Abbott i-STAT biomarker platform differences
 
 ## Contributing
 
-This project is in the design phase. Research code exists in the parent codebase but has not been extracted or packaged for standalone use. Contributions to fusion architecture design and missing-modality strategies are the most immediately useful. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Research contributions welcome from neuroimaging and biomarker scientists. All contributions must pass TRIPOD+AI reporting standards and include a model card. See `CONTRIBUTING.md`.
 
 ## License
 
-Apache-2.0 -- see [LICENSE](LICENSE) for details.
+- Methodology documentation: CC-BY-4.0
+- Reproducibility scripts: MIT
+- Model weights: model-specific (see individual model cards)
+
+## Maintainer
+
+EvidenceOS Research Lab — [`research@evidenceos.com`](mailto:research@evidenceos.com)
+
+## Related repos
+
+- [`multiverse-analysis-toolkit`](../multiverse-analysis-toolkit) — Multiverse analysis framework
+- [`cbim-framework`](../cbim-framework) — Patient classification ontology
+- [`evidence-capsules`](../evidence-capsules) — Output Evidence Capsule schema
